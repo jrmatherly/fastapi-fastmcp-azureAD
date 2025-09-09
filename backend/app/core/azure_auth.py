@@ -151,9 +151,170 @@ def setup_auth_routes(
         # Clean up the flow from store
         flow_store.pop(state, None)
 
-        return HTMLResponse(
-            f"Login successful. Use this code to exchange for token: <pre>{auth_code}</pre>"
-        )
+        # Enhanced UI with copy-to-clipboard functionality
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Authentication Code</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body {{
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    max-width: 600px; margin: 50px auto; padding: 20px; text-align: center;
+                    background: #f8f9fa; color: #212529;
+                }}
+                .container {{
+                    background: white; border-radius: 12px; padding: 30px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                }}
+                h2 {{ color: #28a745; margin-bottom: 10px; }}
+                .code-container {{
+                    background: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px;
+                    padding: 20px; margin: 20px 0; position: relative;
+                }}
+                .auth-code {{
+                    font-family: 'Monaco', 'Menlo', 'Consolas', monospace; font-size: 18px;
+                    font-weight: bold; color: #495057; letter-spacing: 2px;
+                    user-select: all; cursor: pointer; word-break: break-all;
+                }}
+                .copy-btn {{
+                    background: #007bff; color: white; border: none; border-radius: 6px;
+                    padding: 12px 24px; font-size: 16px; cursor: pointer; margin-top: 15px;
+                    transition: all 0.2s;
+                }}
+                .copy-btn:hover {{ background: #0056b3; }}
+                .copy-btn:active {{ transform: translateY(1px); }}
+                .copy-btn.copied {{ background: #28a745 !important; }}
+                .instructions {{ color: #6c757d; margin-top: 20px; font-size: 14px; line-height: 1.5; }}
+                .step {{ margin: 8px 0; }}
+                .warning {{
+                    background: #fff3cd; border: 1px solid #ffeaa7; color: #856404;
+                    padding: 12px; border-radius: 6px; margin-top: 20px; font-size: 14px;
+                }}
+                @media (max-width: 600px) {{
+                    body {{ margin: 20px; padding: 15px; }}
+                    .container {{ padding: 20px; }}
+                    .auth-code {{ font-size: 14px; letter-spacing: 1px; }}
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h2>🎉 Authentication Successful!</h2>
+                <p>Copy this authentication code to complete your login:</p>
+
+                <div class="code-container">
+                    <div class="auth-code" id="auth-code" title="Click to select all">{auth_code}</div>
+                    <button class="copy-btn" id="copy-btn" onclick="copyToClipboard()">
+                        📋 Copy to Clipboard
+                    </button>
+                </div>
+
+                <div class="instructions">
+                    <div class="step"><strong>Step 1:</strong> Click "Copy to Clipboard" above</div>
+                    <div class="step"><strong>Step 2:</strong> Return to your application</div>
+                    <div class="step"><strong>Step 3:</strong> Paste the code when prompted</div>
+                    <div class="step"><strong>Step 4:</strong> Close this browser window</div>
+                </div>
+
+                <div class="warning">
+                    <strong>⚠️ Security Note:</strong> This code expires in 2 minutes and can only be used once.
+                </div>
+            </div>
+
+            <script>
+                function copyToClipboard() {{
+                    const code = document.getElementById('auth-code').textContent;
+                    const btn = document.getElementById('copy-btn');
+
+                    if (navigator.clipboard && navigator.clipboard.writeText) {{
+                        // Modern clipboard API
+                        navigator.clipboard.writeText(code).then(() => {{
+                            showCopySuccess(btn);
+                        }}).catch(() => {{
+                            fallbackCopy(code, btn);
+                        }});
+                    }} else {{
+                        fallbackCopy(code, btn);
+                    }}
+                }}
+
+                function fallbackCopy(text, btn) {{
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-999999px';
+                    textArea.style.top = '-999999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+
+                    try {{
+                        const successful = document.execCommand('copy');
+                        if (successful) {{
+                            showCopySuccess(btn);
+                        }} else {{
+                            showCopyError(btn);
+                        }}
+                    }} catch (err) {{
+                        showCopyError(btn);
+                    }}
+
+                    document.body.removeChild(textArea);
+                }}
+
+                function showCopySuccess(btn) {{
+                    const originalText = btn.textContent;
+                    btn.textContent = '✅ Copied!';
+                    btn.classList.add('copied');
+
+                    setTimeout(() => {{
+                        btn.textContent = originalText;
+                        btn.classList.remove('copied');
+                    }}, 2000);
+                }}
+
+                function showCopyError(btn) {{
+                    const originalText = btn.textContent;
+                    btn.textContent = '❌ Copy Failed';
+                    btn.style.background = '#dc3545';
+
+                    setTimeout(() => {{
+                        btn.textContent = originalText;
+                        btn.style.background = '#007bff';
+                    }}, 2000);
+                }}
+
+                // Auto-select code on click for manual selection
+                document.getElementById('auth-code').onclick = function() {{
+                    if (window.getSelection) {{
+                        const range = document.createRange();
+                        range.selectNodeContents(this);
+                        const selection = window.getSelection();
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                    }}
+                }};
+
+                // Auto-focus the copy button for keyboard accessibility
+                document.addEventListener('DOMContentLoaded', function() {{
+                    document.getElementById('copy-btn').focus();
+                }});
+
+                // Keyboard shortcut: Ctrl+C / Cmd+C to copy
+                document.addEventListener('keydown', function(e) {{
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'c') {{
+                        e.preventDefault();
+                        copyToClipboard();
+                    }}
+                }});
+            </script>
+        </body>
+        </html>
+        """
+        return HTMLResponse(html_content)
 
     @app.post("/auth/exchange")
     def exchange_auth_code(payload: dict[str, Any]):
