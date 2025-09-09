@@ -288,6 +288,7 @@ docker compose watch
 
 # 2. Run development tests
 cd backend
+source .venv/bin/activate  # Activate virtual environment first
 ./scripts/test_mcp_server.py
 
 # 3. Run production tests with Azure AD
@@ -323,7 +324,7 @@ curl https://mcp-weather.yourdomain.com/health
 |-----------|----------------|-------------------|---------|
 | **Server Startup** | ⚠️ Manual | ✅ Automatic | Improved |
 | **Health Checks** | ✅ Works | ✅ Works | Maintained |
-| **Azure AD Auth** | ✅ Works | ✅ Works | Maintained |
+| **Azure AD Auth** | ✅ Works (HTTP 307 fix) | ✅ Works | Improved |
 | **MCP Protocol** | ✅ Works | ✅ Works | Maintained |
 | **Hot Reload** | ❌ Manual restart | ✅ Automatic | Improved |
 | **Multi-Server** | ❌ Complex | ✅ Simple | New Feature |
@@ -428,7 +429,41 @@ class MCPServiceRegistry:
 
 ---
 
-**Status**: ✅ **IMPLEMENTED** - MCP Weather Server now auto-starts with Docker Compose
+## 🔧 Troubleshooting & Fixes
+
+### Code Quality Issues
+
+**Ruff Linting Configuration**:
+- Added per-file ignores for test scripts in `pyproject.toml`: `per-file-ignores = {"scripts/test_*.py" = ["T201"]}`
+- **Rationale**: Interactive test scripts appropriately use print statements for user output
+- **Production Code**: Always use proper logging (`logger.warning()`, `logger.info()`)
+
+**FastAPI Lifespan Functions**:
+- Required `app` parameter may be unused in simple cases
+- **Solution**: Add `# noqa: ARG001` comment to suppress linting warning
+- **Pattern**: `async def lifespan(app: FastAPI):  # noqa: ARG001`
+
+### Azure AD Authentication
+
+**HTTP Status Code Handling**:
+- **Issue**: Test scripts failed with "❌ Auth URL request failed: 307"
+- **Root Cause**: Expected HTTP 302 but Azure AD returns HTTP 307 (Temporary Redirect)
+- **Fix**: Handle both redirect types: `if response.status_code in [302, 307]:`
+- **Background**: HTTP 307 maintains original method, HTTP 302 traditionally changes to GET
+
+**OAuth Flow Testing**:
+```python
+# Before (failed)
+if response.status_code == 302:  # Only handled 302
+
+# After (works)
+if response.status_code in [302, 307]:  # Handles both redirect types
+    auth_url = response.headers.get("location")
+```
+
+---
+
+**Status**: ✅ **IMPLEMENTED** - MCP Weather Server auto-starts with Docker Compose + Authentication fixes applied
 **Next Steps**: Deploy to staging environment and test production configuration
 
 *Last Updated: 2025-01-09*

@@ -101,6 +101,26 @@ The tests run with Pytest, modify and add tests to `./backend/app/tests/`.
 
 If you use GitHub Actions the tests will run automatically.
 
+### MCP Server Testing
+
+To test the integrated MCP servers, first ensure the virtual environment is activated:
+
+```console
+source .venv/bin/activate
+```
+
+**Development Testing** (local MCP server):
+```console
+./scripts/test_mcp_server.py
+```
+
+**Production Testing** (with Azure AD authentication):
+```console
+./scripts/test_mcp_production.py
+```
+
+**Note**: Test scripts use print statements for interactive user output, which is configured as an exception to the T201 linting rule in `pyproject.toml`.
+
 ### Test running stack
 
 If your stack is already up and you just want to run the tests, you can use:

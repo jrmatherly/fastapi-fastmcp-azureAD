@@ -49,12 +49,15 @@ class ProductionMCPTester:
         try:
             response = self.client.get(f"{self.base_url}/auth/login")
 
-            if response.status_code == 302:  # Redirect to Azure AD
+            if response.status_code in [302, 307]:  # Redirect to Azure AD (302 or 307)
                 auth_url = response.headers.get("location")
-                print(f"✅ Azure AD Login URL obtained: {auth_url[:100]}...")
+                print(
+                    f"✅ Azure AD Login URL obtained (HTTP {response.status_code}): {auth_url[:100]}..."
+                )
                 return auth_url
             else:
                 print(f"❌ Auth URL request failed: {response.status_code}")
+                print(f"   Response: {response.text}")
                 return None
 
         except Exception as e:
