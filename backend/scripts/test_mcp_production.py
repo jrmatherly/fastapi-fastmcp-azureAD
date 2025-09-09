@@ -10,6 +10,7 @@ for direct user output. Ruff T201 (print) warnings are suppressed via ruff.toml 
 """
 
 import json
+import re
 import sys
 import webbrowser
 from urllib.parse import parse_qs, urlparse
@@ -22,6 +23,54 @@ class ProductionMCPTester:
         self.base_url = base_url
         self.client = httpx.Client(follow_redirects=False)
         self.access_token: str | None = None
+
+    def extract_auth_code(self, user_input: str) -> str | None:
+        """
+        Smart extraction of auth code from either:
+        1. Full callback URL: http://localhost:8001/auth/callback?code=abc123&state=xyz
+        2. Direct auth code: f64ec70f-73a5-4079-8b94-199268023911
+
+        This supports both the traditional workflow (pasting full URL) and the
+        enhanced UI workflow (copying just the auth code from our improved interface).
+        """
+        user_input = user_input.strip()
+
+        # Method 1: Full URL parsing (existing behavior for backward compatibility)
+        if user_input.startswith("http") and "callback" in user_input:
+            try:
+                parsed = urlparse(user_input)
+                query_params = parse_qs(parsed.query)
+                auth_code = query_params.get("code", [None])[0]
+                if auth_code:
+                    print("✅ Extracted auth code from callback URL")
+                    return auth_code
+            except Exception:
+                pass
+
+        # Method 2: Direct auth code (new enhanced UI support)
+        # UUID format: 8-4-4-4-12 characters (total 36 chars with hyphens)
+        if len(user_input) == 36 and user_input.count("-") == 4:
+            if re.match(r"^[a-fA-F0-9\-]{36}$", user_input):
+                print("✅ Using auth code directly from enhanced UI")
+                return user_input
+
+        # Method 3: Other common auth code formats (without hyphens)
+        if re.match(r"^[a-fA-F0-9]{30,40}$", user_input):
+            print("✅ Using auth code directly")
+            return user_input
+
+        # Method 4: Handle mixed formats and clean input
+        # Remove common prefixes and suffixes that users might accidentally include
+        cleaned = re.sub(
+            r"^(code[=:]?|auth[_-]?code[=:]?)\s*", "", user_input, flags=re.IGNORECASE
+        )
+        cleaned = re.sub(r'\s*([\'"`,;.])+$', "", cleaned)
+
+        if cleaned != user_input and len(cleaned) >= 30:
+            # Try again with cleaned input
+            return self.extract_auth_code(cleaned)
+
+        return None
 
     def test_server_startup(self) -> bool:
         """Test that MCP server started with Azure AD configuration."""
@@ -76,8 +125,10 @@ class ProductionMCPTester:
         print("\n📋 Authentication Instructions:")
         print("1. The browser will open with Azure AD login")
         print("2. Complete the authentication process")
-        print("3. You'll be redirected to a callback URL")
-        print("4. Copy the ENTIRE callback URL and paste it here")
+        print("3. You'll be redirected to our enhanced authentication page")
+        print("4. Either:")
+        print("   • Copy the authentication code using the 'Copy to Clipboard' button")
+        print("   • OR copy the full callback URL from the browser address bar")
         print("\n🌐 Opening browser...")
 
         try:
@@ -85,28 +136,22 @@ class ProductionMCPTester:
         except Exception:
             print(f"⚠️  Couldn't open browser automatically. Please visit: {auth_url}")
 
-        # Get callback URL from user
-        print("\n📥 Paste the callback URL here:")
-        callback_url = input().strip()
+        # Get input from user (supports both URL and auth code)
+        print("\n📥 Paste the authentication code OR callback URL here:")
+        user_input = input().strip()
 
-        # Extract auth code
-        try:
-            parsed = urlparse(callback_url)
-            query_params = parse_qs(parsed.query)
-            auth_code = query_params.get("code", [None])[0]
+        # Smart extraction of auth code
+        auth_code = self.extract_auth_code(user_input)
 
-            if not auth_code:
-                print("❌ No authorization code found in callback URL")
-                return False
-
-            print("✅ Authorization code extracted")
-
-            # Exchange auth code for token
-            return self.exchange_auth_code(auth_code)
-
-        except Exception as e:
-            print(f"❌ Failed to process callback URL: {e}")
+        if not auth_code:
+            print("❌ Could not extract authorization code from input")
+            print("💡 Please ensure you copied either:")
+            print("   • The authentication code from the success page")
+            print("   • The full callback URL from your browser")
             return False
+
+        # Exchange auth code for token
+        return self.exchange_auth_code(auth_code)
 
     def exchange_auth_code(self, auth_code: str) -> bool:
         """Exchange authorization code for access token."""
