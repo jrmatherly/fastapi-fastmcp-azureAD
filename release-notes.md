@@ -138,7 +138,7 @@
 * 🔧 Add .auth playwright folder to `.gitignore`. PR [#1383](https://github.com/fastapi/full-stack-fastapi-template/pull/1383) by [@justin-p](https://github.com/justin-p).
 * ⬆️ Bump rollup from 4.6.1 to 4.22.5 in /frontend. PR [#1379](https://github.com/fastapi/full-stack-fastapi-template/pull/1379) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆ Bump astral-sh/setup-uv from 2 to 3. PR [#1364](https://github.com/fastapi/full-stack-fastapi-template/pull/1364) by [@dependabot[bot]](https://github.com/apps/dependabot).
-*  👷 Update pre-commit end-of-file-fixer hook to exclude email-templates. PR [#1296](https://github.com/fastapi/full-stack-fastapi-template/pull/1296) by [@goabonga](https://github.com/goabonga).
+* 👷 Update pre-commit end-of-file-fixer hook to exclude email-templates. PR [#1296](https://github.com/fastapi/full-stack-fastapi-template/pull/1296) by [@goabonga](https://github.com/goabonga).
 * ⬆ Bump tiangolo/issue-manager from 0.5.0 to 0.5.1. PR [#1332](https://github.com/fastapi/full-stack-fastapi-template/pull/1332) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * 🔧 Run task by the same Python environment used to run Copier. PR [#1157](https://github.com/fastapi/full-stack-fastapi-template/pull/1157) by [@waketzheng](https://github.com/waketzheng).
 * 👷 Tweak generate client to error out if there are errors. PR [#1377](https://github.com/fastapi/full-stack-fastapi-template/pull/1377) by [@tiangolo](https://github.com/tiangolo).
@@ -469,16 +469,16 @@ Test cov > 90% ✅
 * ♻️ Refactor frontend Docker build setup, use plain NodeJS, use custom Nginx config, fix build for old Vue. PR [#555](https://github.com/tiangolo/full-stack-fastapi-template/pull/555) by [@tiangolo](https://github.com/tiangolo).
 * ♻️ Refactor project generation, discard cookiecutter, use plain git/clone/fork. PR [#553](https://github.com/tiangolo/full-stack-fastapi-template/pull/553) by [@tiangolo](https://github.com/tiangolo).
 * Refactor backend:
-    * Simplify configs for tools and format to better support editor integration.
-    * Add mypy configurations and plugins.
-    * Add types to all the codebase.
-    * Update types for SQLAlchemy models with plugin.
-    * Update and refactor CRUD utils.
-    * Refactor DB sessions to use dependencies with `yield`.
-    * Refactor dependencies, security, CRUD, models, schemas, etc. To simplify code and improve autocompletion.
-    * Change from PyJWT to Python-JOSE as it supports additional use cases.
-    * Fix JWT tokens using user email/ID as the subject in `sub`.
-    * PR [#158](https://github.com/tiangolo/full-stack-fastapi-template/pull/158).
+  * Simplify configs for tools and format to better support editor integration.
+  * Add mypy configurations and plugins.
+  * Add types to all the codebase.
+  * Update types for SQLAlchemy models with plugin.
+  * Update and refactor CRUD utils.
+  * Refactor DB sessions to use dependencies with `yield`.
+  * Refactor dependencies, security, CRUD, models, schemas, etc. To simplify code and improve autocompletion.
+  * Change from PyJWT to Python-JOSE as it supports additional use cases.
+  * Fix JWT tokens using user email/ID as the subject in `sub`.
+  * PR [#158](https://github.com/tiangolo/full-stack-fastapi-template/pull/158).
 * Simplify `docker-compose.*.yml` files, refactor deployment to reduce config files. PR [#153](https://github.com/tiangolo/full-stack-fastapi-template/pull/153).
 * Simplify env var files, merge to a single `.env` file. PR [#151](https://github.com/tiangolo/full-stack-fastapi-template/pull/151).
 
@@ -586,15 +586,15 @@ Test cov > 90% ✅
 ## 0.3.0
 
 * PR <a href="https://github.com/tiangolo/full-stack-fastapi-template/pull/14" target="_blank">#14</a>:
-    * Update CRUD utils to use types better.
-    * Simplify Pydantic model names, from `UserInCreate` to `UserCreate`, etc.
-    * Upgrade packages.
-    * Add new generic "Items" models, crud utils, endpoints, and tests. To facilitate re-using them to create new functionality. As they are simple and generic (not like Users), it's easier to copy-paste and adapt them to each use case.
-    * Update endpoints/*path operations* to simplify code and use new utilities, prefix and tags in `include_router`.
-    * Update testing utils.
-    * Update linting rules, relax vulture to reduce false positives.
-    * Update migrations to include new Items.
-    * Update project README.md with tips about how to start with backend.
+  * Update CRUD utils to use types better.
+  * Simplify Pydantic model names, from `UserInCreate` to `UserCreate`, etc.
+  * Upgrade packages.
+  * Add new generic "Items" models, crud utils, endpoints, and tests. To facilitate re-using them to create new functionality. As they are simple and generic (not like Users), it's easier to copy-paste and adapt them to each use case.
+  * Update endpoints/*path operations* to simplify code and use new utilities, prefix and tags in `include_router`.
+  * Update testing utils.
+  * Update linting rules, relax vulture to reduce false positives.
+  * Update migrations to include new Items.
+  * Update project README.md with tips about how to start with backend.
 
 * Upgrade Python to 3.7 as Celery is now compatible too. PR <a href="https://github.com/tiangolo/full-stack-fastapi-template/pull/10" target="_blank">#10</a> by <a href="https://github.com/ebreton" target="_blank">@ebreton</a>.
 
