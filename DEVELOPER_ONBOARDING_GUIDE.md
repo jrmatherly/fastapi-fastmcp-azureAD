@@ -34,6 +34,11 @@ docker compose watch
 # Frontend: http://localhost:5173
 # Backend API: http://localhost:8000/docs
 # Database Admin: http://localhost:8080
+
+# 4. Key API Endpoints
+# Health Check: http://localhost:8000/api/v1/utils/health-check/
+# Interactive Docs: http://localhost:8000/docs
+# OpenAPI Schema: http://localhost:8000/openapi.json
 ```
 
 ### Your First 30 Minutes
@@ -136,11 +141,14 @@ cp .env.example .env
 # 3. Install pre-commit hooks
 uv run pre-commit install
 
-# 4. Start development environment
+# 4. Build containers (optional - docker compose watch will do this)
+docker compose build
+
+# 5. Start development environment
 docker compose watch
 
-# 5. Verify installation
-curl http://localhost:8000/api/v1/health  # Backend health check
+# 6. Verify installation
+curl http://localhost:8000/api/v1/utils/health-check/  # Backend health check
 curl http://localhost:5173  # Frontend access
 ```
 
@@ -540,11 +548,130 @@ class ItemPublic(ItemBase):
     owner_id: int
 ```
 
+### Database Migrations with Alembic
+
+**Migration System Overview**
+- **Tool**: Alembic (SQLAlchemy's migration tool)
+- **Source of Truth**: `app/models.py` defines database schema
+- **Storage**: Migration files in `backend/alembic/versions/`
+- **Control**: Manual migration application for safety
+
+**Migration Workflow**
+
+*1. Create Migration (after model changes):*
+```bash
+# Auto-generate migration from model changes
+docker compose exec backend alembic revision --autogenerate -m "Add phone_number to users"
+
+# Always review the generated migration file before applying!
+```
+
+*2. Review Generated Migration:*
+```python
+# Example: backend/alembic/versions/abc123_add_phone_number_to_users.py
+def upgrade() -> None:
+    op.add_column('user', sa.Column('phone_number', sa.String(), nullable=True))
+
+def downgrade() -> None:
+    op.drop_column('user', 'phone_number')
+```
+
+*3. Apply Migration:*
+```bash
+# Apply all pending migrations
+docker compose exec backend alembic upgrade head
+
+# Apply specific migration
+docker compose exec backend alembic upgrade abc123
+```
+
+**Essential Migration Commands**
+```bash
+# Check current migration status
+docker compose exec backend alembic current
+
+# View migration history
+docker compose exec backend alembic history --verbose
+
+# Show pending migrations
+docker compose exec backend alembic heads
+
+# Downgrade to previous version
+docker compose exec backend alembic downgrade -1
+
+# Downgrade to specific revision
+docker compose exec backend alembic downgrade abc123
+
+# Show SQL that would be executed (dry run)
+docker compose exec backend alembic upgrade head --sql
+```
+
+**Safety Practices**
+- ✅ **Always review** auto-generated migrations before applying
+- ✅ **Test migrations** on development database first
+- ✅ **Backup production** database before applying migrations
+- ✅ **Commit migration files** to version control
+- ❌ **Never edit applied** migration files
+- ❌ **Don't skip migration review** even for "simple" changes
+
+**Migration Application Environments**
+
+*Development:*
+- Manual application using `alembic upgrade head`
+- Safe to reset database with `docker compose down -v`
+- Can easily test migration rollbacks
+
+*Production:*
+- Applied during deployment process before starting new containers
+- Typically part of CI/CD pipeline
+- Requires careful planning and backups
+
+**Database Reset (Development Only)**
+```bash
+# Complete database reset - destroys all data!
+docker compose down -v  # Stop and remove volumes
+docker compose up -d db # Start fresh database
+docker compose exec backend alembic upgrade head  # Apply all migrations
+```
+
+**Troubleshooting Migration Issues**
+
+*Migration Conflicts:*
+```bash
+# When multiple developers create migrations simultaneously
+docker compose exec backend alembic merge -m "Merge migrations"
+# Review and edit the merge file, then apply
+docker compose exec backend alembic upgrade head
+```
+
+*Failed Migration:*
+```bash
+# Check what failed
+docker compose logs backend
+
+# Manually fix database or rollback
+docker compose exec backend alembic downgrade -1
+
+# Fix the migration file and reapply
+docker compose exec backend alembic upgrade head
+```
+
+*Out of Sync Models and Database:*
+```bash
+# Check current database state
+docker compose exec backend alembic current
+
+# Generate new migration to sync
+docker compose exec backend alembic revision --autogenerate -m "Sync models with database"
+```
+
 **Common Issues & Solutions**
 - **Migration conflicts**: Resolve with `alembic merge` or reset dev DB
 - **Import errors**: Use absolute imports with `from app.`
 - **Type errors**: Run `mypy` to check type annotations
 - **Database connection issues**: Check Docker containers are running
+- **Stuck migrations**: Check `alembic_version` table in database
+- **Auto-generation missed changes**: Manually edit migration file
 
 ---
 
@@ -1455,7 +1582,7 @@ curl http://localhost:8000/openapi.json
 **Useful Commands**
 ```bash
 # Quick health check
-curl http://localhost:8000/api/v1/health
+curl http://localhost:8000/api/v1/utils/health-check/
 
 # Restart everything
 docker compose down && docker compose watch

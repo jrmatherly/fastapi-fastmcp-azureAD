@@ -1,5 +1,14 @@
 # FastAPI Project - Development
 
+This guide covers local development procedures. For comprehensive setup instructions, see the **[Developer Onboarding Guide](DEVELOPER_ONBOARDING_GUIDE.md)**.
+
+## Quick Reference
+
+📋 **Main Documentation**: [README.md](README.md) - Project overview
+🚀 **New Team Members**: [Developer Onboarding Guide](DEVELOPER_ONBOARDING_GUIDE.md) - Complete setup
+🔒 **Security**: [SECURITY.md](SECURITY.md) - Security policies
+🤖 **AI Assistants**: [AGENTS.md](AGENTS.md) - AI configuration
+
 ## Docker Compose
 
 * Start the local stack with Docker Compose:
@@ -165,6 +174,98 @@ ruff-format..............................................................Passed
 eslint...................................................................Passed
 prettier.................................................................Passed
 ```
+
+## Database Migrations
+
+This project uses **Alembic** for database schema versioning and migrations. All database schema changes must go through the migration system to ensure consistency across environments.
+
+### Migration Basics
+
+**Source of Truth**: Database schema is defined in `backend/app/models.py`
+**Migration Files**: Stored in `backend/alembic/versions/`
+**Control**: Manual migration application for safety
+
+### Creating Migrations
+
+After making changes to models in `backend/app/models.py`:
+
+```bash
+# Generate migration automatically
+docker compose exec backend alembic revision --autogenerate -m "Add phone_number to users"
+
+# Always review the generated migration file before applying!
+```
+
+### Applying Migrations
+
+```bash
+# Apply all pending migrations
+docker compose exec backend alembic upgrade head
+
+# Apply specific migration
+docker compose exec backend alembic upgrade abc123
+```
+
+### Migration Management Commands
+
+```bash
+# Check current migration status
+docker compose exec backend alembic current
+
+# View migration history
+docker compose exec backend alembic history --verbose
+
+# Show pending migrations
+docker compose exec backend alembic heads
+
+# Rollback to previous version
+docker compose exec backend alembic downgrade -1
+
+# Show SQL without executing (dry run)
+docker compose exec backend alembic upgrade head --sql
+```
+
+### Development Database Reset
+
+**Warning**: This destroys all data!
+
+```bash
+# Complete database reset
+docker compose down -v  # Stop and remove volumes
+docker compose up -d db # Start fresh database
+docker compose exec backend alembic upgrade head  # Apply all migrations
+```
+
+### Troubleshooting Migrations
+
+**Migration Conflicts** (when multiple developers create migrations):
+```bash
+docker compose exec backend alembic merge -m "Merge migrations"
+# Review and edit the merge file, then apply
+docker compose exec backend alembic upgrade head
+```
+
+**Failed Migration**:
+```bash
+# Check what failed
+docker compose logs backend
+
+# Rollback and fix
+docker compose exec backend alembic downgrade -1
+# Fix the migration file and reapply
+docker compose exec backend alembic upgrade head
+```
+
+### Migration Safety Rules
+
+- ✅ **Always review** auto-generated migrations
+- ✅ **Test migrations** on development database first
+- ✅ **Backup production** database before applying migrations
+- ✅ **Commit migration files** to version control
+- ❌ **Never edit applied** migration files
+- ❌ **Don't skip migration review** even for "simple" changes
+
+For comprehensive migration documentation, see the [Developer Onboarding Guide](DEVELOPER_ONBOARDING_GUIDE.md#database-migrations-with-alembic).
 
 ## URLs
 

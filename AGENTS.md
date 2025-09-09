@@ -9,6 +9,9 @@ A modern full-stack web application template combining FastAPI (Python backend) 
 
 **Architecture:**
 - **Backend:** FastAPI + SQLModel + PostgreSQL + Alembic migrations
+- **Authentication:** Azure AD + MSAL + JWT + Role-based access control
+- **MCP Integration:** fastMCP server with weather tools example
+- **Session Storage:** Redis for secure token storage and caching
 - **Frontend:** React 19 + TypeScript + TanStack Router + Chakra UI
 - **Development:** Docker Compose + hot reloading + live debugging
 - **Production:** Docker containers + Traefik proxy + GitHub Actions CI/CD
@@ -372,6 +375,8 @@ def read_current_user(current_user: CurrentUser) -> UserPublic:
 
 **Environment Variables:**
 - **Required Secrets:** SECRET_KEY, POSTGRES_PASSWORD, FIRST_SUPERUSER_PASSWORD
+- **Azure AD Secrets:** AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET
+- **Redis Configuration:** REDIS_HOST, REDIS_PORT, REDIS_PASSWORD (optional)
 - **Secret Management:** Use environment variables, never commit secrets
 - **Production:** Secrets via CI/CD variables or secret management service
 
@@ -499,6 +504,18 @@ htmlcov/
 SECRET_KEY="your-secret-key-here"
 FIRST_SUPERUSER_PASSWORD="changethis"
 POSTGRES_PASSWORD="changethis"
+
+# Azure AD Configuration
+AZURE_TENANT_ID="your-tenant-id"
+AZURE_CLIENT_ID="your-client-id"
+AZURE_CLIENT_SECRET="your-client-secret"
+AZURE_REDIRECT_URI="http://localhost:8000/auth/callback"
+
+# Redis Configuration
+REDIS_HOST="localhost"
+REDIS_PORT="6379"
+REDIS_PASSWORD=""  # Optional
+REDIS_SSL="false"
 
 # Development defaults
 ENVIRONMENT=local

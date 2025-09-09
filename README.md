@@ -5,24 +5,39 @@
 
 ## Technology Stack and Features
 
+### Backend Stack
 - ⚡ [**FastAPI**](https://fastapi.tiangolo.com) for the Python backend API.
   - 🧰 [SQLModel](https://sqlmodel.tiangolo.com) for the Python SQL database interactions (ORM).
   - 🔍 [Pydantic](https://docs.pydantic.dev), used by FastAPI, for the data validation and settings management.
   - 💾 [PostgreSQL](https://www.postgresql.org) as the SQL database.
-- 🚀 [React](https://react.dev) for the frontend.
+  - 🔄 [Alembic](https://alembic.sqlalchemy.org) for database migrations.
+- 🔐 **Enterprise Authentication**
+  - 🏢 [Azure AD](https://azure.microsoft.com/en-us/products/active-directory) integration for SSO.
+  - 🔑 JWT (JSON Web Token) authentication with Azure MSAL.
+  - 🛡️ Role-based access control (RBAC) with Azure App Roles.
+- 🤖 [**FastMCP**](https://github.com/jlowin/fastmcp) for Model Context Protocol server integration.
+  - 🌤️ Weather tools server example included.
+  - 🔧 Role-based tool access filtering.
+- 🗄️ [Redis](https://redis.io) for session storage and caching.
+
+### Frontend Stack
+- 🚀 [React 19](https://react.dev) for the frontend.
   - 💃 Using TypeScript, hooks, Vite, and other parts of a modern frontend stack.
   - 🎨 [Chakra UI](https://chakra-ui.com) for the frontend components.
+  - 🧭 [TanStack Router](https://tanstack.com/router) for file-based routing.
+  - 🔄 [TanStack Query](https://tanstack.com/query) for server state management.
   - 🤖 An automatically generated frontend client.
   - 🧪 [Playwright](https://playwright.dev) for End-to-End testing.
   - 🦇 Dark mode support.
+
+### Infrastructure & DevOps
 - 🐋 [Docker Compose](https://www.docker.com) for development and production.
-- 🔒 Secure password hashing by default.
-- 🔑 JWT (JSON Web Token) authentication.
-- 📫 Email based password recovery.
-- ✅ Tests with [Pytest](https://pytest.org).
 - 📞 [Traefik](https://traefik.io) as a reverse proxy / load balancer.
 - 🚢 Deployment instructions using Docker Compose, including how to set up a frontend Traefik proxy to handle automatic HTTPS certificates.
 - 🏭 CI (continuous integration) and CD (continuous deployment) based on GitHub Actions.
+- ✅ Comprehensive testing with [Pytest](https://pytest.org) and Playwright.
+- 📫 Email based password recovery.
+- 🔒 Secure password hashing by default.
 
 ### Dashboard Login
 
@@ -52,11 +67,35 @@
 
 [![API docs](img/docs.png)](https://github.com/jrmatherly/fastapi-fastmcp-azureAD)
 
-## How To Use It
+## Quick Start
 
-You can **just fork or clone** this repository and use it as is.
+For new team members and detailed setup instructions, see the **[Developer Onboarding Guide](DEVELOPER_ONBOARDING_GUIDE.md)**.
+
+### 5-Minute Setup
+
+```bash
+# Clone and start
+git clone <repository-url>
+cd fastapi-fastmcp-azureAD
+docker compose watch
+
+# Access the application
+# Frontend: http://localhost:5173
+# Backend API: http://localhost:8000/docs
+# Database Admin: http://localhost:8080
+```
 
 ✨ It just works. ✨
+
+## 📚 Documentation
+
+- **[Developer Onboarding Guide](DEVELOPER_ONBOARDING_GUIDE.md)** - Comprehensive guide for new team members
+- **[Development Setup](development.md)** - Local development procedures and database migrations
+- **[Deployment Guide](deployment.md)** - Production deployment instructions
+- **[Security Policy](SECURITY.md)** - Security guidelines and incident reporting
+- **[Agent Configuration](AGENTS.md)** - AI assistant setup and project context
+
+## How To Use It
 
 ### How to Use a Private Repository
 
