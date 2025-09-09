@@ -3,9 +3,12 @@ import json
 import time
 from typing import Optional
 
+
 class RedisTokenStore:
     def __init__(self, host, port, password, ssl=True, prefix="token"):
-        self.client = redis.Redis(host=host, port=port, password=password, ssl=ssl, ssl_cert_reqs=None)
+        self.client = redis.Redis(
+            host=host, port=port, password=password, ssl=ssl, ssl_cert_reqs=None
+        )
         self.prefix = prefix
 
     def _make_key(self, user_oid):
@@ -32,4 +35,3 @@ class RedisTokenStore:
 
     def delete_auth_code(self, auth_code):
         self.client.delete(self._make_authcode_key(auth_code))
-

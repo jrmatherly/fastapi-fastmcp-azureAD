@@ -27,11 +27,13 @@ mcp.add_middleware(AuthorizationMiddleware(auth_context, redis_token_store))
 
 
 @mcp.tool(tags={"read"})
-def get_weather(city: str) -> str: ...
+def get_weather(city: str) -> str:
+    ...
 
 
 @mcp.tool(tags={"write"})
-def get_alerts(state: str) -> str: ...
+def get_alerts(state: str) -> str:
+    ...
 
 
 # --- Mount MCP Server ---

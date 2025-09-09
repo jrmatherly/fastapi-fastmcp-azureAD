@@ -39,7 +39,7 @@ class AuthContext:
 def setup_auth_routes(app, auth_context, redis_token_store, redirect_uri: str):
     """Setup authentication routes for the FastAPI app"""
     flow_store = {}  # Store for OAuth flows
-    
+
     @app.get("/auth/login")
     def login():
         flow = auth_context.msal_app.initiate_auth_code_flow(
@@ -54,14 +54,17 @@ def setup_auth_routes(app, auth_context, redis_token_store, redirect_uri: str):
         flow = flow_store.get(state)
         if not flow:
             return HTMLResponse("Invalid state parameter", status_code=400)
-            
+
         result = auth_context.msal_app.acquire_token_by_auth_code_flow(
             flow, dict(request.query_params)
         )
-        
+
         if "error" in result:
-            return HTMLResponse(f"Authentication failed: {result.get('error_description', 'Unknown error')}", status_code=400)
-            
+            return HTMLResponse(
+                f"Authentication failed: {result.get('error_description', 'Unknown error')}",
+                status_code=400,
+            )
+
         oid = result["id_token_claims"]["oid"]
         redis_token_store.save_token(
             oid,
@@ -74,10 +77,10 @@ def setup_auth_routes(app, auth_context, redis_token_store, redirect_uri: str):
         )
         auth_code = str(uuid.uuid4())
         redis_token_store.set_auth_code(auth_code, oid, 120)
-        
+
         # Clean up the flow from store
         flow_store.pop(state, None)
-        
+
         return HTMLResponse(
             f"Login successful. Use this code to exchange for token: <pre>{auth_code}</pre>"
         )
@@ -87,11 +90,11 @@ def setup_auth_routes(app, auth_context, redis_token_store, redirect_uri: str):
         auth_code = payload.get("auth_code")
         if not auth_code:
             return {"error": "auth_code is required"}
-            
+
         user_oid = redis_token_store.get_auth_code(auth_code)
         if not user_oid:
             return {"error": "Invalid or expired auth_code"}
-            
+
         token_data = redis_token_store.load_token(user_oid)
         redis_token_store.delete_auth_code(auth_code)
         return token_data

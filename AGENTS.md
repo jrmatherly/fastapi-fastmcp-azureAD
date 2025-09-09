@@ -308,7 +308,7 @@ test('user login flow', async ({ page }) => {
   await page.fill('[placeholder="Email"]', 'admin@example.com');
   await page.fill('[placeholder="Password"]', 'changethis');
   await page.click('button[type="submit"]');
-  
+
   await expect(page.locator('text=Dashboard')).toBeVisible();
 });
 ```
@@ -331,7 +331,7 @@ npx playwright test --debug
 
 **Key Principles:**
 - **Test Realistic Scenarios:** Use actual API calls and database operations
-- **Maintain Test Data:** Use factories and fixtures for consistent test data  
+- **Maintain Test Data:** Use factories and fixtures for consistent test data
 - **Test Edge Cases:** Authentication failures, validation errors, permission boundaries
 - **Fast Feedback:** Unit tests should run in <5 seconds, E2E tests in <30 seconds
 - **Parallel Execution:** Tests must be independent and thread-safe
@@ -586,7 +586,7 @@ VITE_API_URL=http://localhost:8000
 
 Check for these domain-specific agents using `claudekit list agents`:
 - **fastapi-expert** - FastAPI patterns, SQLModel, API design
-- **react-expert** - React patterns, hooks, component architecture  
+- **react-expert** - React patterns, hooks, component architecture
 - **typescript-expert** - TypeScript types, API client generation
 - **docker-expert** - Container optimization, multi-service orchestration
 - **testing-expert** - pytest + Playwright integration testing
