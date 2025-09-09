@@ -6,6 +6,10 @@
 # Python
 .venv/
 __pycache__/
+.ruff_cache/
+.idx/
+.copier/
+
 
 # Node.js
 node_modules/
@@ -19,3 +23,5 @@ node_modules/
 # OS
 .DS_Store
 Thumbs.db
+example/
+reports/
