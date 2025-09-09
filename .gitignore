@@ -1,6 +1,17 @@
-.vscode
+.vscode/
+.serena/
+.claude/
+.env
+
+# Python
+.venv/
+__pycache__/
+
+# Node.js
 node_modules/
+
+# Testing
+/blob-report/
 /test-results/
 /playwright-report/
-/blob-report/
 /playwright/.cache/
