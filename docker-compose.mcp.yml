@@ -1,0 +1,78 @@
+# Extended Docker Compose with dedicated MCP services
+# Usage: docker compose -f docker-compose.yml -f docker-compose.mcp.yml up
+
+services:
+  # Weather MCP Server
+  mcp-weather:
+    image: "${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}"
+    restart: always
+    networks:
+      - traefik-public
+      - default
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+      redis:
+        condition: service_healthy
+        restart: true
+    env_file:
+      - .env
+    environment:
+      - DOMAIN=${DOMAIN}
+      - ENVIRONMENT=${ENVIRONMENT}
+      - SECRET_KEY=${SECRET_KEY?Variable not set}
+      - POSTGRES_SERVER=db
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      # Azure AD + Redis Configuration
+      - AZURE_TENANT_ID=${AZURE_TENANT_ID}
+      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
+      - AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
+      - AZURE_REDIRECT_URI=http://localhost:8001/auth/callback
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - REDIS_SSL=false
+    # Run the MCP server specifically
+    command: uvicorn app.mcp.weather_server:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    build:
+      context: ./backend
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+      - traefik.constraint-label=traefik-public
+      - traefik.http.services.${STACK_NAME?Variable not set}-mcp-weather.loadbalancer.server.port=8000
+      - traefik.http.routers.${STACK_NAME?Variable not set}-mcp-weather-http.rule=Host(`mcp-weather.${DOMAIN?Variable not set}`)
+      - traefik.http.routers.${STACK_NAME?Variable not set}-mcp-weather-http.entrypoints=http
+      - traefik.http.routers.${STACK_NAME?Variable not set}-mcp-weather-https.rule=Host(`mcp-weather.${DOMAIN?Variable not set}`)
+      - traefik.http.routers.${STACK_NAME?Variable not set}-mcp-weather-https.entrypoints=https
+      - traefik.http.routers.${STACK_NAME?Variable not set}-mcp-weather-https.tls=true
+      - traefik.http.routers.${STACK_NAME?Variable not set}-mcp-weather-https.tls.certresolver=le
+    ports:
+      - "8001:8000" # External port 8001 for local access
+
+
+  # Future MCP servers can be added here
+  # mcp-finance:
+  #   image: "${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}"
+  #   command: uvicorn app.mcp.finance_server:app --host 0.0.0.0 --port 8000
+  #   ports:
+  #     - "8002:8000"
+  #   ... (similar configuration)
+
+  # MCP Gateway/Registry (future enhancement)
+  # mcp-registry:
+  #   image: "${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}"
+  #   command: uvicorn app.mcp.registry:app --host 0.0.0.0 --port 8000
+  #   ports:
+  #     - "8010:8000"
+  #   environment:
+  #     - MCP_SERVERS=mcp-weather:8000,mcp-finance:8000

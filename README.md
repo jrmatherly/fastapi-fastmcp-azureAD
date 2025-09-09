@@ -18,6 +18,7 @@
 - 🤖 [**FastMCP**](https://github.com/jlowin/fastmcp) for Model Context Protocol server integration.
   - 🌤️ Weather tools server example included.
   - 🔧 Role-based tool access filtering.
+  - ⚡ **Auto-Start**: MCP servers automatically start with `docker compose watch`.
 - 🗄️ [Redis](https://redis.io) for session storage and caching.
 
 ### Frontend Stack
@@ -82,6 +83,7 @@ docker compose watch
 # Access the application
 # Frontend: http://localhost:5173
 # Backend API: http://localhost:8000/docs
+# MCP Weather Server: http://localhost:8001 (auto-started!)
 # Database Admin: http://localhost:8080
 ```
 
@@ -90,6 +92,7 @@ docker compose watch
 ## 📚 Documentation
 
 - **[Developer Onboarding Guide](DEVELOPER_ONBOARDING_GUIDE.md)** - Comprehensive guide for new team members
+- **[MCP Integration Guide](MCP_INTEGRATION_GUIDE.md)** - Auto-start MCP servers and integration patterns
 - **[Development Setup](development.md)** - Local development procedures and database migrations
 - **[Deployment Guide](deployment.md)** - Production deployment instructions
 - **[Security Policy](SECURITY.md)** - Security guidelines and incident reporting

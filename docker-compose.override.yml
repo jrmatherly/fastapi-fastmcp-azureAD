@@ -101,6 +101,41 @@ services:
         - VITE_API_URL=http://localhost:8000
         - NODE_ENV=development
 
+  # MCP Weather Server (Development)
+  mcp-weather:
+    build:
+      context: ./backend
+    restart: "no"
+    ports:
+      - "8001:8000"
+    depends_on:
+      - backend
+      - redis
+    env_file:
+      - .env
+    environment:
+      - DOMAIN=${DOMAIN}
+      - ENVIRONMENT=${ENVIRONMENT}
+      - AZURE_TENANT_ID=${AZURE_TENANT_ID}
+      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
+      - AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
+      - AZURE_REDIRECT_URI=http://localhost:8001/auth/callback
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - REDIS_SSL=false
+    command: uvicorn app.mcp.weather_server:app --host 0.0.0.0 --port 8000 --reload
+    develop:
+      watch:
+        - path: ./backend
+          action: sync
+          target: /app
+          ignore:
+            - ./backend/.venv
+            - .venv
+        - path: ./backend/pyproject.toml
+          action: rebuild
+
   playwright:
     build:
       context: ./frontend

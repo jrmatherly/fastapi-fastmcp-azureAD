@@ -7,6 +7,7 @@ Welcome to the FastAPI + React Full-Stack Template with Azure AD integration! Th
 1. [Quick Start](#-quick-start)
 2. [Development Environment Setup](#-development-environment-setup)
 3. [Project Architecture Overview](#-project-architecture-overview)
+   - [MCP Integration Architecture](#mcp-integration-architecture)
 4. [Role-Specific Guides](#-role-specific-guides)
 5. [Development Workflow](#-development-workflow)
 6. [Team Communication & Collaboration](#-team-communication--collaboration)
@@ -33,10 +34,12 @@ docker compose watch
 # 3. Access the application
 # Frontend: http://localhost:5173
 # Backend API: http://localhost:8000/docs
+# MCP Weather Server: http://localhost:8001 (auto-started!)
 # Database Admin: http://localhost:8080
 
 # 4. Key API Endpoints
 # Health Check: http://localhost:8000/api/v1/utils/health-check/
+# MCP Server Health: http://localhost:8001/health
 # Interactive Docs: http://localhost:8000/docs
 # OpenAPI Schema: http://localhost:8000/openapi.json
 ```
@@ -191,7 +194,7 @@ FastAPI (Web Framework)
 ├── JWT + Passlib (Authentication)
 ├── Pydantic (Data Validation)
 ├── Azure AD + MSAL (SSO Integration)
-├── FastMCP (Azure Integration)
+├── FastMCP (Azure Integration) - **Auto-Start MCP Servers**
 └── Redis (Caching/Sessions)
 ```
 
@@ -206,6 +209,32 @@ React 19 (UI Framework)
 ├── React Hook Form (Form Management)
 └── Axios (HTTP Client)
 ```
+
+### MCP Integration Architecture
+
+**Auto-Start MCP Servers**: All MCP servers automatically start with `docker compose watch` - no manual commands needed!
+
+**Service Architecture**:
+```
+Port Layout:
+├── 8000: Main FastAPI Backend
+├── 8001: MCP Weather Server (AUTO-STARTED)
+├── 8002: Reserved for future MCP servers
+├── 5173: Frontend development server
+├── 5432: PostgreSQL database
+└── 6379: Redis cache/session store
+
+Startup Dependencies:
+PostgreSQL + Redis → Backend → MCP Servers → Frontend
+```
+
+**Key Features**:
+- ✅ **Zero Manual Commands**: MCP servers start automatically
+- 🔄 **Hot Reload**: Code changes restart MCP servers
+- 🏗️ **Production Ready**: Health checks, restart policies, isolation
+- 📈 **Scalable**: Easy to add multiple MCP servers
+
+For detailed MCP integration patterns and options, see **[MCP Integration Guide](MCP_INTEGRATION_GUIDE.md)**.
 
 **Infrastructure**
 ```
@@ -1581,8 +1610,11 @@ curl http://localhost:8000/openapi.json
 
 **Useful Commands**
 ```bash
-# Quick health check
+# Quick health check - Main app
 curl http://localhost:8000/api/v1/utils/health-check/
+
+# Quick health check - MCP Weather Server (auto-started)
+curl http://localhost:8001/health
 
 # Restart everything
 docker compose down && docker compose watch
